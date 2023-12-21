@@ -1,10 +1,10 @@
 package response
 
-type UserRegistrationResponse struct {
-	User UserRegistrationBody `json:"user"`
+type UserAuthenticationResponse struct {
+	User UserAuthenticationBody `json:"user"`
 }
 
-type UserRegistrationBody struct {
+type UserAuthenticationBody struct {
 	Email    string `json:"email"`
 	Token    string `json:"token"`
 	Username string `json:"username"`
