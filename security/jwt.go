@@ -1,13 +1,14 @@
 package security
 
 import (
+	"gin_realword/config"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
 
 // GeneratorJWT 生成 jwt
 func GeneratorJWT(username, email string) (string, error) {
-	hmacSampleSecret := []byte("secret")
+	hmacSampleSecret := []byte(config.GetSecret())
 	now := time.Now()
 	tokenDuration := 24 * time.Hour
 	// Create a new token object, specifying signing method and the claims
