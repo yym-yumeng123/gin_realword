@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"gin_realword/logger"
 	"gin_realword/params/request"
 	"gin_realword/utils"
 	"github.com/gin-gonic/gin"
@@ -17,24 +18,28 @@ func AddUserHandler(r *gin.Engine) {
 }
 
 func userRegistration(ctx *gin.Context) {
+	log := logger.New(ctx)
 	body := request.UserRegistrationRequest{}
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
+		log.WithError(err).Errorln("bind json failed")
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println(utils.JsonMarshal(body))
+	fmt.Println()
+	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called")
 }
 
 func userLogin(ctx *gin.Context) {
+	log := logger.New(ctx)
 	body := request.UserLoginRequest{}
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
+		log.WithError(err).Errorln("bind json failed")
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println(utils.JsonMarshal(body), "login")
-
+	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
 }
