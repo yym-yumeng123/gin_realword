@@ -32,6 +32,8 @@ func userRegistration(ctx *gin.Context) {
 	fmt.Println()
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called")
 
+	// TODO: insert data to db
+
 	token, err := security.GeneratorJWT(body.User.Username, body.User.Email)
 	if err != nil {
 		log.WithError(err).Errorln("generate jwt failed")
@@ -60,4 +62,24 @@ func userLogin(ctx *gin.Context) {
 	}
 
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
+
+	// TODO: get username from db
+
+	userName := "yym"
+	token, err := security.GeneratorJWT(userName, body.User.Email)
+	if err != nil {
+		log.WithError(err).Errorln("generate jwt failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.UserAuthenticationResponse{
+		User: response.UserAuthenticationBody{
+			Email:    body.User.Email,
+			Token:    token,
+			Username: userName,
+			Bio:      "",
+			Image:    "https://api.realworld.io/images/smiley-cyrus.jpeg",
+		},
+	})
 }
