@@ -3,9 +3,11 @@ package handler
 import (
 	"fmt"
 	"gin_realword/logger"
+	"gin_realword/models"
 	"gin_realword/params/request"
 	"gin_realword/params/response"
 	"gin_realword/security"
+	"gin_realword/storage"
 	"gin_realword/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -32,7 +34,17 @@ func userRegistration(ctx *gin.Context) {
 	fmt.Println()
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called")
 
-	// TODO: insert data to db
+	if err := storage.CreateUser(ctx, &models.User{
+		Username: body.User.Username,
+		Password: body.User.Password,
+		Email:    body.User.Email,
+		Image:    "https://api.realworld.io/images/smiley-cyrus.jpeg",
+		Bio:      "",
+	}); err != nil {
+		log.WithError(err).Errorf("create user failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 
 	token, err := security.GeneratorJWT(body.User.Username, body.User.Email)
 	if err != nil {
@@ -64,9 +76,20 @@ func userLogin(ctx *gin.Context) {
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
 
 	// TODO: get username from db
+	dbUser, err := storage.GetUserByEmail(ctx, body.User.Email)
+	if err != nil {
+		log.WithError(err).Errorf("get user failed")
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 
-	userName := "yym"
-	token, err := security.GeneratorJWT(userName, body.User.Email)
+	// TODO: 密码对比, 密文
+	if dbUser.Password != body.User.Password {
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	token, err := security.GeneratorJWT(dbUser.Username, body.User.Email)
 	if err != nil {
 		log.WithError(err).Errorln("generate jwt failed")
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -77,7 +100,7 @@ func userLogin(ctx *gin.Context) {
 		User: response.UserAuthenticationBody{
 			Email:    body.User.Email,
 			Token:    token,
-			Username: userName,
+			Username: dbUser.Username,
 			Bio:      "",
 			Image:    "https://api.realworld.io/images/smiley-cyrus.jpeg",
 		},

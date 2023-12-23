@@ -1,19 +1,21 @@
 package storage
 
 import (
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"log"
 )
 
 var db *sqlx.DB
 
 func init() {
-	db, err := sql.Open("mysql",
-		"root:123456@tcp(127.0.0.1:3305)/realword")
+	var err error
+	db, err = sqlx.Open("mysql", "root:123456@(localhost:3305)/realworld")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
 }
