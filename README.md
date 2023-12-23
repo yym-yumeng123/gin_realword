@@ -19,3 +19,8 @@ docker run
 --character-set-server=utf8mb4 
 --collation-server=utf8mb4_unicode_ci
 ```
+
+
+### 密码 password
+
+SHA512 -> bcypt(per user salt, strength 10)

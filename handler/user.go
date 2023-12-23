@@ -34,9 +34,16 @@ func userRegistration(ctx *gin.Context) {
 	fmt.Println()
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called")
 
+	hashPassword, err := security.HashPassword(body.User.Password)
+	if err != nil {
+		log.WithError(err).Errorf("hashPassword failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	if err := storage.CreateUser(ctx, &models.User{
 		Username: body.User.Username,
-		Password: body.User.Password,
+		Password: hashPassword,
 		Email:    body.User.Email,
 		Image:    "https://api.realworld.io/images/smiley-cyrus.jpeg",
 		Bio:      "",
@@ -75,7 +82,6 @@ func userLogin(ctx *gin.Context) {
 
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user login called")
 
-	// TODO: get username from db
 	dbUser, err := storage.GetUserByEmail(ctx, body.User.Email)
 	if err != nil {
 		log.WithError(err).Errorf("get user failed")
@@ -83,8 +89,8 @@ func userLogin(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: 密码对比, 密文
-	if dbUser.Password != body.User.Password {
+	// 密码对比, 密文
+	if !security.CheckPassword(body.User.Password, dbUser.Password) {
 		ctx.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
