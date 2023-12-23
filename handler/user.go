@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"gin_realword/logger"
 	"gin_realword/params/request"
+	"gin_realword/params/response"
+	"gin_realword/security"
 	"gin_realword/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -29,6 +31,22 @@ func userRegistration(ctx *gin.Context) {
 
 	fmt.Println()
 	log.WithField("user", utils.JsonMarshal(body)).Infof("user registration called")
+
+	token, err := security.GeneratorJWT(body.User.Username, body.User.Email)
+	if err != nil {
+		log.WithError(err).Errorln("generate jwt failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.JSON(http.StatusOK, response.UserAuthenticationResponse{
+		User: response.UserAuthenticationBody{
+			Email:    body.User.Email,
+			Token:    token,
+			Username: body.User.Username,
+			Bio:      "",
+			Image:    "https://api.realworld.io/images/smiley-cyrus.jpeg",
+		},
+	})
 }
 
 func userLogin(ctx *gin.Context) {
