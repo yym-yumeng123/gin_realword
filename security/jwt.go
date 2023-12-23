@@ -27,3 +27,20 @@ func GeneratorJWT(username, email string) (string, error) {
 
 	return tokenString, err
 }
+
+func VerifyJWT(token string) (*jwt.MapClaims, bool, error) {
+	var claim jwt.MapClaims
+	// Parse the token
+	claims, err := jwt.ParseWithClaims(token, &claim, func(token *jwt.Token) (interface{}, error) {
+		return []byte(config.GetSecret()), nil
+	})
+
+	if err != nil {
+		return nil, false, err
+	}
+
+	if claims.Valid {
+		return &claim, true, nil
+	}
+	return nil, true, nil
+}
