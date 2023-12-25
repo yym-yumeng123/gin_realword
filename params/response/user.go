@@ -11,3 +11,14 @@ type UserAuthenticationBody struct {
 	Bio      string `json:"bio"`
 	Image    string `json:"image"`
 }
+
+type UserProfileResponse struct {
+	UserProfile UserProfile `json:"profile"`
+}
+
+type UserProfile struct {
+	Username  string `json:"username"`
+	Bio       string `json:"bio"`
+	Image     string `json:"image"`
+	Following string `json:"following"`
+}

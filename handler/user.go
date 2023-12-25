@@ -19,6 +19,7 @@ func AddUserHandler(r *gin.Engine) {
 		usersGroup.POST("", userRegistration)
 		usersGroup.POST("/login", userLogin)
 	}
+	r.GET("api/profiles/:username", userProfile)
 }
 
 func userRegistration(ctx *gin.Context) {
@@ -109,6 +110,27 @@ func userLogin(ctx *gin.Context) {
 			Username: dbUser.Username,
 			Bio:      "",
 			Image:    "https://api.realworld.io/images/smiley-cyrus.jpeg",
+		},
+	})
+}
+
+func userProfile(ctx *gin.Context) {
+	log := logger.New(ctx)
+	userName := ctx.Param("username")
+	log = log.WithField("username", userName)
+	log.Infof("user Profile called, userName: %v\n", userName)
+	user, err := storage.GetUserByUserName(ctx, userName)
+	if err != nil {
+		log.WithError(err).Infoln("get user by username failed")
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	ctx.JSON(http.StatusOK, response.UserProfileResponse{
+		UserProfile: response.UserProfile{
+			Username:  user.Username,
+			Bio:       user.Bio,
+			Image:     user.Image,
+			Following: "false",
 		},
 	})
 }
