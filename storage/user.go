@@ -33,3 +33,16 @@ func GetUserByUserName(ctx context.Context, username string) (*models.User, erro
 	}
 	return &user, nil
 }
+
+func UpdateUserByUserName(ctx context.Context, username string, user *models.User) error {
+	if user.Password != "" {
+
+		_, err := db.ExecContext(ctx, "update user set username=?, password=?, email=?, image=?, bio=? where username = ?",
+			user.Username, user.Password, user.Email, user.Image, user.Bio, username)
+		return err
+	}
+
+	_, err := db.ExecContext(ctx, "update user set username=?, email=?, image=?, bio=? where username = ?",
+		user.Username, user.Email, user.Image, user.Bio, username)
+	return err
+}

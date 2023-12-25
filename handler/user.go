@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"gin_realword/logger"
+	"gin_realword/middleware"
 	"gin_realword/models"
 	"gin_realword/params/request"
 	"gin_realword/params/response"
@@ -20,6 +21,7 @@ func AddUserHandler(r *gin.Engine) {
 		usersGroup.POST("/login", userLogin)
 	}
 	r.GET("api/profiles/:username", userProfile)
+	r.Use(middleware.AuthMiddleware()).PUT("/api/user", editUser)
 }
 
 func userRegistration(ctx *gin.Context) {
@@ -133,4 +135,68 @@ func userProfile(ctx *gin.Context) {
 			Following: "false",
 		},
 	})
+}
+
+func editUser(ctx *gin.Context) {
+	log := logger.New(ctx)
+	log.Infof("user: %v", security.GetCurrentUserName(ctx))
+	var body request.EditUserRequest
+
+	// 绑定参数
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		log.WithError(err).Errorln("bind json failed")
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// username email 不能为空
+	if body.EditUserBody.Username == "" || body.EditUserBody.Email == "" {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	// 密码加密
+	if body.EditUserBody.Password != "" {
+		var err error
+		body.EditUserBody.Password, err = security.HashPassword(body.EditUserBody.Password)
+		if err != nil {
+			log.WithError(err).Errorf("hash password failed")
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	dbUser := &models.User{
+		Username: body.EditUserBody.Username,
+		Password: body.EditUserBody.Password,
+		Email:    body.EditUserBody.Email,
+		Image:    body.EditUserBody.Image,
+		Bio:      body.EditUserBody.Bio,
+	}
+
+	// 数据库更新数据
+	if err := storage.UpdateUserByUserName(ctx, security.GetCurrentUserName(ctx), dbUser); err != nil {
+		log.WithError(err).Errorf("updated failed")
+		ctx.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	// 生成 jwt
+	token, err := security.GeneratorJWT(dbUser.Username, dbUser.Email)
+	if err != nil {
+		log.WithError(err).Errorln("generate jwt failed")
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, response.UserAuthenticationResponse{
+		User: response.UserAuthenticationBody{
+			Email:    dbUser.Email,
+			Token:    token,
+			Username: dbUser.Username,
+			Bio:      dbUser.Bio,
+			Image:    dbUser.Image,
+		},
+	})
+
 }

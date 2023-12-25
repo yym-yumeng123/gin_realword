@@ -2,6 +2,7 @@ package security
 
 import (
 	"gin_realword/config"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
@@ -43,4 +44,16 @@ func VerifyJWT(token string) (*jwt.MapClaims, bool, error) {
 		return &claim, true, nil
 	}
 	return nil, true, nil
+}
+
+func GetCurrentUserName(ctx *gin.Context) string {
+	mapClaims := ctx.MustGet("user").(*jwt.MapClaims)
+	username := (*mapClaims)["user"].(map[string]any)["username"].(string)
+	return username
+}
+
+func GetCurrentUserEmail(ctx *gin.Context) string {
+	mapClaims := ctx.MustGet("user").(*jwt.MapClaims)
+	email := (*mapClaims)["user"].(map[string]any)["email"].(string)
+	return email
 }
