@@ -21,7 +21,7 @@ func AddUserHandler(r *gin.Engine) {
 		usersGroup.POST("/login", userLogin)
 	}
 	r.GET("api/profiles/:username", userProfile)
-	r.PUT("/api/user", editUser).Use(middleware.AuthMiddleware())
+	r.PUT("/api/user", editUser, middleware.AuthMiddleware())
 }
 
 func userRegistration(ctx *gin.Context) {
