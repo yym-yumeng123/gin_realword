@@ -1,6 +1,9 @@
 package response
 
-import "time"
+import (
+	"gin_realword/models"
+	"time"
+)
 
 type ListArticlesResponse struct {
 	ArticlesCount int64       `json:"articlesCount"`
@@ -18,6 +21,24 @@ type Articles struct {
 	FavoritersCount int            `json:"favoritersCount"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
+}
+
+func (a *Articles) FromDB(dbArticle *models.Article) {
+	a.Author = &ArticleAuthor{
+		Bio:       dbArticle.AuthorUserBio,
+		Following: false,
+		Image:     dbArticle.AuthorUserImage,
+		Username:  dbArticle.AuthorUsername,
+	}
+	a.Title = dbArticle.Title
+	a.Slug = dbArticle.Slug
+	a.Body = dbArticle.Body
+	a.Description = dbArticle.Description
+	a.TagList = dbArticle.TagList
+	a.Favorited = false
+	a.FavoritersCount = 0
+	a.CreatedAt = dbArticle.CreatedAt
+	a.UpdatedAt = dbArticle.UpdatedAt
 }
 
 type ArticleAuthor struct {
