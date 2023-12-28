@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"gorm.io/driver/mysql"
@@ -33,4 +34,8 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func IsNotFound(err error) bool {
+	return errors.Is(err, gorm.ErrRecordNotFound)
 }

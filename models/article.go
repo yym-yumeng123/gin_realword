@@ -9,7 +9,7 @@ import (
 )
 
 type Article struct {
-	Id             int `db:"id"`
+	Id             int64 `db:"id"`
 	AuthorUsername string
 	Title          string
 	Slug           string

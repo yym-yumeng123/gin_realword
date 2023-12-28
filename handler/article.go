@@ -26,6 +26,7 @@ func AddArticleHandler(r *gin.Engine) {
 		articlesGroup.PUT("/:slug", editArticles)
 		articlesGroup.DELETE("/:slug", deleteArticles)
 	}
+
 }
 
 func getArticle(ctx *gin.Context) {
@@ -35,7 +36,7 @@ func getArticle(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	respArticle := &response.Articles{}
+	respArticle := &response.Article{}
 	respArticle.FromDB(article)
 	ctx.JSON(http.StatusOK, gin.H{
 		"article": respArticle,
@@ -67,7 +68,7 @@ func createArticles(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	respArticle := &response.Articles{}
+	respArticle := &response.Article{}
 	respArticle.FromDB(article)
 	ctx.JSON(http.StatusCreated, gin.H{
 		"article": respArticle,
@@ -111,7 +112,7 @@ func editArticles(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	respArticle := &response.Articles{}
+	respArticle := &response.Article{}
 	respArticle.FromDB(article)
 	ctx.JSON(http.StatusCreated, gin.H{
 		"article": respArticle,
@@ -150,22 +151,22 @@ func listArticles(ctx *gin.Context) {
 	var resp response.ListArticlesResponse
 	resp.ArticlesCount = total
 	for _, article := range articles {
-		resp.Articles = append(resp.Articles, &response.Articles{
-			Author: &response.ArticleAuthor{
+		resp.Articles = append(resp.Articles, &response.Article{
+			Author: &response.Author{
 				Bio:       article.AuthorUserBio,
 				Following: false,
 				Image:     article.AuthorUserImage,
 				Username:  article.AuthorUsername,
 			},
-			Title:           article.Title,
-			Slug:            article.Slug,
-			Body:            article.Body,
-			Description:     article.Description,
-			TagList:         article.TagList,
-			Favorited:       false,
-			FavoritersCount: 0,
-			CreatedAt:       article.CreatedAt,
-			UpdatedAt:       article.UpdatedAt,
+			Title:          article.Title,
+			Slug:           article.Slug,
+			Body:           article.Body,
+			Description:    article.Description,
+			TagList:        article.TagList,
+			Favorited:      false,
+			FavoritesCount: 0,
+			CreatedAt:      article.CreatedAt,
+			UpdatedAt:      article.UpdatedAt,
 		})
 	}
 
